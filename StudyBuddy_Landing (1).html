@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyBuddy — Планируй учёбу легко</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ======================== RESET & BASE ======================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #4F6FD4;
+      --primary-dark: #3A55B8;
+      --accent: #FF6B6B;
+      --accent-dark: #E85555;
+      --bg: #FFFFFF;
+      --bg-soft: #F5F7FF;
+      --text: #1A1A2E;
+      --text-muted: #6B7280;
+      --border: #E5E9F5;
+      --radius: 16px;
+      --shadow: 0 4px 24px rgba(79,111,212,0.10);
+      --shadow-hover: 0 12px 40px rgba(79,111,212,0.22);
+      --transition: 0.28s cubic-bezier(0.4,0,0.2,1);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; color: var(--text); background: var(--bg); line-height: 1.6; overflow-x: hidden; }
+    h1,h2,h3,h4 { font-family: 'Manrope', sans-serif; line-height: 1.2; }
+    img { max-width: 100%; display: block; }
+    a { text-decoration: none; color: inherit; }
+    ul { list-style: none; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .section-title { font-size: clamp(1.7rem, 3vw, 2.5rem); font-weight: 800; text-align: center; margin-bottom: 16px; }
+    .section-subtitle { font-size: 1.05rem; color: var(--text-muted); text-align: center; max-width: 560px; margin: 0 auto 52px; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px; border-radius: 50px; font-family: 'Manrope', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; transition: var(--transition); border: none; outline: none; }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 20px rgba(255,107,107,0.35); }
+    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,107,107,0.45); }
+    .btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
+    .btn-outline:hover { background: var(--primary); color: #fff; transform: translateY(-2px); }
+    .btn-white { background: #fff; color: var(--primary); box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.18); }
+    /* Reveal animation */
+    .reveal { opacity: 0; transform: translateY(32px); transition: opacity 0.6s var(--transition), transform 0.6s var(--transition); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* ======================== HEADER ======================== */
+    header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 16px 0; transition: var(--transition); }
+    header.scrolled { background: rgba(255,255,255,0.96); backdrop-filter: blur(12px); box-shadow: 0 2px 20px rgba(79,111,212,0.10); }
+    .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .logo { display: flex; align-items: center; gap: 10px; font-family: 'Manrope', sans-serif; font-size: 1.35rem; font-weight: 800; color: var(--primary); }
+    .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), #7B96F0); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    nav { display: none; }
+    nav a { font-size: 0.95rem; font-weight: 500; color: var(--text-muted); transition: color var(--transition); padding: 4px 0; }
+    nav a:hover { color: var(--primary); }
+    .header-cta { display: none; }
+    /* Burger */
+    .burger { display: flex; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; background: none; border: none; }
+    .burger span { display: block; width: 24px; height: 2px; background: var(--text); border-radius: 2px; transition: var(--transition); }
+    .burger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .burger.active span:nth-child(2) { opacity: 0; }
+    .burger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    /* Mobile nav drawer */
+    .mobile-nav { position: fixed; top: 0; right: -100%; width: 80%; max-width: 320px; height: 100vh; background: #fff; z-index: 999; padding: 100px 32px 40px; display: flex; flex-direction: column; gap: 12px; box-shadow: -8px 0 40px rgba(0,0,0,0.12); transition: right 0.35s ease; }
+    .mobile-nav.open { right: 0; }
+    .mobile-nav a { font-size: 1.15rem; font-weight: 600; color: var(--text); padding: 12px 0; border-bottom: 1px solid var(--border); transition: color var(--transition); }
+    .mobile-nav a:hover { color: var(--primary); }
+    .mobile-nav .btn { margin-top: 20px; text-align: center; justify-content: center; }
+    .nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 998; }
+    .nav-overlay.show { display: block; }
+    @media (min-width: 768px) {
+      nav { display: flex; align-items: center; gap: 32px; }
+      .header-cta { display: inline-flex; }
+      .burger { display: none; }
+    }
+
+    /* ======================== HERO ======================== */
+    .hero { min-height: 100vh; display: flex; align-items: center; padding: 100px 0 60px; background: linear-gradient(135deg, #EEF2FF 0%, #F5F7FF 50%, #FFF0F0 100%); position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; top: -40%; right: -20%; width: 700px; height: 700px; background: radial-gradient(circle, rgba(79,111,212,0.08) 0%, transparent 70%); border-radius: 50%; }
+    .hero::after { content: ''; position: absolute; bottom: -30%; left: -10%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(255,107,107,0.07) 0%, transparent 70%); border-radius: 50%; }
+    .hero-inner { display: grid; grid-template-columns: 1fr; gap: 48px; align-items: center; position: relative; z-index: 1; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(79,111,212,0.1); color: var(--primary); border-radius: 50px; padding: 6px 16px; font-size: 0.85rem; font-weight: 600; margin-bottom: 20px; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; margin-bottom: 20px; line-height: 1.15; }
+    .hero h1 span { color: var(--primary); }
+    .hero-sub { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 36px; max-width: 480px; }
+    .hero-btns { display: flex; flex-wrap: wrap; gap: 16px; }
+    .hero-stats { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 48px; }
+    .stat-item { display: flex; flex-direction: column; }
+    .stat-num { font-family: 'Manrope', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--primary); }
+    .stat-label { font-size: 0.85rem; color: var(--text-muted); }
+    /* Hero illustration (CSS art) */
+    .hero-visual { display: flex; justify-content: center; }
+    .phone-mock { width: 260px; height: 480px; background: #1A1A2E; border-radius: 36px; padding: 16px; box-shadow: 0 30px 80px rgba(26,26,46,0.25), 0 0 0 6px #fff, 0 0 0 10px #E5E9F5; position: relative; }
+    .phone-screen { background: linear-gradient(160deg, #2A3A8A, #1A1A2E); border-radius: 24px; height: 100%; padding: 20px 14px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+    .phone-header { display: flex; justify-content: space-between; align-items: center; }
+    .phone-logo { font-family: 'Manrope', sans-serif; font-size: 0.8rem; font-weight: 800; color: #7B96F0; }
+    .phone-avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #FFB5B5); }
+    .phone-greeting { font-size: 0.65rem; color: rgba(255,255,255,0.5); margin-top: 4px; }
+    .phone-title { font-family: 'Manrope', sans-serif; font-size: 0.9rem; color: #fff; font-weight: 700; }
+    .progress-ring { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.06); border-radius: 12px; padding: 10px; margin-top: 4px; }
+    .ring { width: 50px; height: 50px; border-radius: 50%; background: conic-gradient(var(--accent) 0% 72%, rgba(255,255,255,0.1) 72%); display: flex; align-items: center; justify-content: center; font-family: 'Manrope', sans-serif; font-size: 0.75rem; font-weight: 800; color: #fff; }
+    .ring-info { font-size: 0.65rem; color: rgba(255,255,255,0.7); }
+    .ring-info b { display: block; font-size: 0.75rem; color: #fff; font-family: 'Manrope', sans-serif; }
+    .task-list { display: flex; flex-direction: column; gap: 6px; }
+    .task-item { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.06); border-radius: 10px; padding: 8px 10px; }
+    .task-check { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.25); flex-shrink: 0; }
+    .task-check.done { background: var(--accent); border-color: var(--accent); display: flex; align-items: center; justify-content: center; }
+    .task-check.done::after { content: '✓'; font-size: 9px; color: #fff; }
+    .task-text { font-size: 0.65rem; color: rgba(255,255,255,0.8); }
+    .task-text.done-text { color: rgba(255,255,255,0.4); text-decoration: line-through; }
+    .task-badge { margin-left: auto; font-size: 0.55rem; padding: 2px 6px; border-radius: 50px; background: rgba(255,107,107,0.25); color: var(--accent); font-weight: 600; }
+    .task-badge.ok { background: rgba(79,111,212,0.25); color: #7B96F0; }
+    .phone-notify { background: linear-gradient(135deg, rgba(79,111,212,0.3), rgba(123,150,240,0.2)); border-radius: 10px; padding: 8px 10px; display: flex; gap: 8px; align-items: center; }
+    .notify-icon { font-size: 1rem; }
+    .notify-text { font-size: 0.6rem; color: rgba(255,255,255,0.8); }
+    .notify-text b { display: block; font-size: 0.65rem; color: #fff; }
+    @media (min-width: 768px) {
+      .hero-inner { grid-template-columns: 1fr 1fr; }
+      .phone-mock { width: 280px; height: 520px; }
+    }
+
+    /* ======================== FEATURES ======================== */
+    #features { padding: 90px 0; background: var(--bg); }
+    .features-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
+    .feature-card { background: var(--bg-soft); border-radius: var(--radius); padding: 28px; border: 1px solid var(--border); transition: var(--transition); cursor: pointer; }
+    .feature-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-4px); border-color: var(--primary); }
+    .feature-icon { width: 52px; height: 52px; background: linear-gradient(135deg, var(--primary), #7B96F0); border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; font-size: 1.4rem; }
+    .feature-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; }
+    .feature-card p { font-size: 0.95rem; color: var(--text-muted); }
+    .feature-more { display: inline-flex; align-items: center; gap: 6px; color: var(--primary); font-size: 0.9rem; font-weight: 600; margin-top: 14px; cursor: pointer; background: none; border: none; font-family: inherit; transition: gap var(--transition); }
+    .feature-more:hover { gap: 10px; }
+    @media (min-width: 640px) { .features-grid { grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 1024px) { .features-grid { grid-template-columns: repeat(4, 1fr); } }
+
+    /* ======================== BENEFITS ======================== */
+    #benefits { padding: 90px 0; background: var(--bg-soft); }
+    .benefits-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
+    .benefit-card { background: #fff; border-radius: var(--radius); padding: 32px 28px; text-align: center; box-shadow: var(--shadow); transition: var(--transition); border: 2px solid transparent; }
+    .benefit-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-hover); border-color: var(--primary); }
+    .benefit-emoji { font-size: 2.5rem; margin-bottom: 16px; }
+    .benefit-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; }
+    .benefit-card p { font-size: 0.9rem; color: var(--text-muted); }
+    @media (min-width: 640px) { .benefits-grid { grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 1024px) { .benefits-grid { grid-template-columns: repeat(4, 1fr); } }
+
+    /* ======================== REVIEWS ======================== */
+    #reviews { padding: 90px 0; background: var(--bg); }
+    .reviews-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
+    .review-card { background: var(--bg-soft); border-radius: var(--radius); padding: 28px; border: 1px solid var(--border); transition: var(--transition); }
+    .review-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-3px); }
+    .review-stars { color: #FBBF24; font-size: 1.1rem; margin-bottom: 14px; letter-spacing: 2px; }
+    .review-text { font-size: 0.97rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 20px; font-style: italic; }
+    .review-author { display: flex; align-items: center; gap: 12px; }
+    .review-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Manrope', sans-serif; font-size: 1.1rem; font-weight: 800; color: #fff; flex-shrink: 0; }
+    .review-name { font-weight: 700; font-size: 0.95rem; }
+    .review-role { font-size: 0.82rem; color: var(--text-muted); }
+    @media (min-width: 768px) { .reviews-grid { grid-template-columns: repeat(3, 1fr); } }
+
+    /* ======================== REGISTER ======================== */
+    #register { padding: 90px 0; background: linear-gradient(135deg, var(--primary) 0%, #7B96F0 100%); }
+    #register .section-title { color: #fff; }
+    #register .section-subtitle { color: rgba(255,255,255,0.8); }
+    .reg-form { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 0.9rem; font-weight: 600; color: rgba(255,255,255,0.9); }
+    .form-group input { padding: 14px 18px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.12); color: #fff; font-size: 1rem; font-family: 'Inter', sans-serif; transition: border-color var(--transition); outline: none; }
+    .form-group input::placeholder { color: rgba(255,255,255,0.5); }
+    .form-group input:focus { border-color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.18); }
+    .form-group input.error { border-color: #FFD6D6; background: rgba(255,100,100,0.15); }
+    .form-error { font-size: 0.82rem; color: #FFD6D6; min-height: 18px; }
+    .form-submit { margin-top: 8px; width: 100%; padding: 16px; border-radius: 50px; background: #fff; color: var(--primary); font-family: 'Manrope', sans-serif; font-size: 1.05rem; font-weight: 800; border: none; cursor: pointer; transition: var(--transition); box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+    .form-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.2); }
+    .form-success { text-align: center; color: #fff; padding: 40px 20px; display: none; }
+    .form-success.show { display: block; }
+    .success-icon { font-size: 3rem; margin-bottom: 16px; }
+    .success-title { font-family: 'Manrope', sans-serif; font-size: 1.5rem; font-weight: 800; margin-bottom: 10px; }
+    .reg-form.hidden { display: none; }
+
+    /* ======================== DOWNLOAD CTA ======================== */
+    #download { padding: 90px 0; background: var(--bg-soft); text-align: center; }
+    .download-inner { max-width: 600px; margin: 0 auto; }
+    .download-inner h2 { font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 800; margin-bottom: 16px; }
+    .download-inner p { color: var(--text-muted); font-size: 1.05rem; margin-bottom: 40px; }
+    .download-btns { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
+    .store-btn { display: flex; align-items: center; gap: 12px; padding: 14px 28px; background: var(--text); color: #fff; border-radius: 14px; transition: var(--transition); }
+    .store-btn:hover { background: var(--primary); transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+    .store-icon { font-size: 1.8rem; }
+    .store-text { text-align: left; }
+    .store-label { font-size: 0.7rem; opacity: 0.75; display: block; }
+    .store-name { font-family: 'Manrope', sans-serif; font-size: 1rem; font-weight: 700; }
+
+    /* ======================== FOOTER ======================== */
+    footer { background: var(--text); color: rgba(255,255,255,0.7); padding: 60px 0 32px; }
+    .footer-inner { display: grid; grid-template-columns: 1fr; gap: 40px; margin-bottom: 48px; }
+    .footer-brand .logo { color: #fff; margin-bottom: 12px; }
+    .footer-brand p { font-size: 0.9rem; max-width: 280px; line-height: 1.7; }
+    .footer-col h4 { font-family: 'Manrope', sans-serif; color: #fff; font-size: 0.95rem; font-weight: 700; margin-bottom: 16px; }
+    .footer-col a { display: block; font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-bottom: 10px; transition: color var(--transition); }
+    .footer-col a:hover { color: #fff; }
+    .social-links { display: flex; gap: 12px; margin-top: 16px; }
+    .social-link { width: 38px; height: 38px; background: rgba(255,255,255,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: var(--transition); }
+    .social-link:hover { background: var(--primary); transform: translateY(-2px); }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 28px; display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; font-size: 0.85rem; }
+    .footer-bottom a { color: rgba(255,255,255,0.5); }
+    .footer-bottom a:hover { color: #fff; }
+    @media (min-width: 768px) { .footer-inner { grid-template-columns: 2fr 1fr 1fr; } }
+
+    /* ======================== MODAL ======================== */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; visibility: hidden; transition: var(--transition); }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+    .modal { background: #fff; border-radius: 24px; padding: 40px; max-width: 520px; width: 100%; position: relative; transform: scale(0.9) translateY(20px); transition: var(--transition); max-height: 90vh; overflow-y: auto; }
+    .modal-overlay.active .modal { transform: scale(1) translateY(0); }
+    .modal-close { position: absolute; top: 16px; right: 16px; width: 36px; height: 36px; background: var(--bg-soft); border: none; border-radius: 50%; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: var(--transition); }
+    .modal-close:hover { background: var(--border); }
+    .modal-icon { font-size: 2.5rem; margin-bottom: 16px; }
+    .modal h3 { font-size: 1.4rem; font-weight: 800; margin-bottom: 12px; }
+    .modal p { color: var(--text-muted); line-height: 1.7; margin-bottom: 12px; }
+    .modal ul { margin: 12px 0 12px 20px; }
+    .modal ul li { color: var(--text-muted); margin-bottom: 8px; list-style: disc; font-size: 0.95rem; }
+
+    /* ======================== ACCORDION ======================== */
+    .accordion { display: flex; flex-direction: column; gap: 12px; }
+    .accordion-item { background: var(--bg-soft); border-radius: 14px; border: 1px solid var(--border); overflow: hidden; transition: box-shadow var(--transition); }
+    .accordion-item:hover { box-shadow: var(--shadow); }
+    .accordion-header { display: flex; align-items: center; gap: 16px; padding: 20px 24px; cursor: pointer; user-select: none; }
+    .accordion-header-icon { font-size: 1.3rem; }
+    .accordion-header h3 { flex: 1; font-size: 1rem; font-weight: 700; }
+    .accordion-arrow { font-size: 1rem; color: var(--primary); transition: transform var(--transition); }
+    .accordion-item.open .accordion-arrow { transform: rotate(180deg); }
+    .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+    .accordion-body-inner { padding: 0 24px 20px; color: var(--text-muted); font-size: 0.95rem; line-height: 1.7; }
+    .accordion-item.open .accordion-body { max-height: 400px; }
+
+    /* ======================== BACK TO TOP ======================== */
+    .back-top { position: fixed; bottom: 28px; right: 28px; width: 48px; height: 48px; background: var(--primary); color: #fff; border: none; border-radius: 50%; font-size: 1.2rem; cursor: pointer; opacity: 0; visibility: hidden; transition: var(--transition); box-shadow: var(--shadow); z-index: 500; display: flex; align-items: center; justify-content: center; }
+    .back-top.show { opacity: 1; visibility: visible; }
+    .back-top:hover { background: var(--primary-dark); transform: translateY(-3px); }
+  </style>
+</head>
+<body>
+
+<!-- NAV OVERLAY -->
+<div class="nav-overlay" id="navOverlay" aria-hidden="true"></div>
+
+<!-- MOBILE NAV -->
+<nav class="mobile-nav" id="mobileNav" aria-label="Мобильное меню">
+  <a href="#features" class="mobile-nav-link">Функции</a>
+  <a href="#benefits" class="mobile-nav-link">Преимущества</a>
+  <a href="#reviews" class="mobile-nav-link">Отзывы</a>
+  <a href="#register" class="mobile-nav-link">Регистрация</a>
+  <a href="#download" class="btn btn-primary">📲 Скачать приложение</a>
+</nav>
+
+<!-- HEADER -->
+<header id="mainHeader">
+  <div class="container">
+    <div class="header-inner">
+      <a href="#" class="logo">
+        <div class="logo-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="3" width="12" height="16" rx="2" fill="white" fill-opacity="0.9"/>
+            <path d="M14 6l4 0M14 9l4 0M14 12l2 0" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="16" cy="16" r="4" fill="#FF6B6B"/>
+            <path d="M14.5 16l1 1 2-2" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        StudyBuddy
+      </a>
+      <nav aria-label="Основная навигация">
+        <a href="#features">Функции</a>
+        <a href="#benefits">Преимущества</a>
+        <a href="#reviews">Отзывы</a>
+        <a href="#register">Регистрация</a>
+      </nav>
+      <a href="#download" class="btn btn-primary header-cta">📲 Скачать приложение</a>
+      <button class="burger" id="burgerBtn" aria-label="Открыть меню" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <div class="hero-badge reveal">
+          <span>🎓</span> Для студентов и учащихся
+        </div>
+        <h1 class="reveal reveal-delay-1">Планируй учёбу <span>легко</span> с StudyBuddy</h1>
+        <p class="hero-sub reveal reveal-delay-2">Контролируйте задачи, дедлайны и прогресс — всё в одном приложении. Никаких пропущенных сроков.</p>
+        <div class="hero-btns reveal reveal-delay-3">
+          <a href="#download" class="btn btn-primary">📲 Скачать сейчас</a>
+          <a href="#features" class="btn btn-outline">Узнать больше</a>
+        </div>
+        <div class="hero-stats reveal reveal-delay-4">
+          <div class="stat-item">
+            <span class="stat-num">50к+</span>
+            <span class="stat-label">Студентов</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num">4.9</span>
+            <span class="stat-label">Рейтинг</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num">3x</span>
+            <span class="stat-label">Продуктивность</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-visual reveal reveal-delay-2">
+        <div class="phone-mock" role="img" aria-label="Интерфейс приложения StudyBuddy">
+          <div class="phone-screen">
+            <div class="phone-header">
+              <span class="phone-logo">StudyBuddy</span>
+              <div class="phone-avatar"></div>
+            </div>
+            <span class="phone-greeting">Доброе утро, Алина!</span>
+            <p class="phone-title">Ваш прогресс</p>
+            <div class="progress-ring">
+              <div class="ring">72%</div>
+              <div class="ring-info">
+                <b>Сегодня</b>
+                7 из 10 задач
+              </div>
+            </div>
+            <p class="phone-title" style="margin-top:8px">Задачи на сегодня</p>
+            <div class="task-list">
+              <div class="task-item">
+                <div class="task-check done"></div>
+                <span class="task-text done-text">Курсовая: введение</span>
+                <span class="task-badge ok">✓</span>
+              </div>
+              <div class="task-item">
+                <div class="task-check done"></div>
+                <span class="task-text done-text">Математика: §4.2</span>
+                <span class="task-badge ok">✓</span>
+              </div>
+              <div class="task-item">
+                <div class="task-check"></div>
+                <span class="task-text">Реферат по физике</span>
+                <span class="task-badge">сегодня</span>
+              </div>
+              <div class="task-item">
+                <div class="task-check"></div>
+                <span class="task-text">Английский: тест</span>
+                <span class="task-badge">завтра</span>
+              </div>
+            </div>
+            <div class="phone-notify">
+              <span class="notify-icon">🔔</span>
+              <div class="notify-text">
+                <b>Напоминание</b>
+                Дедлайн реферата через 3 часа!
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <h2 class="section-title reveal">Основные функции приложения</h2>
+    <p class="section-subtitle reveal">Всё необходимое для успешной учёбы в одном удобном инструменте</p>
+    <div class="features-grid accordion" id="featuresAccordion">
+      <div class="feature-card reveal" data-modal="feat1">
+        <div class="feature-icon">📋</div>
+        <h3>Планирование задач</h3>
+        <p>Расставляйте приоритеты: высокий, средний, низкий. Разбивайте большие задачи на подзадачи.</p>
+        <button class="feature-more" onclick="openModal('feat1')">Подробнее →</button>
+      </div>
+      <div class="feature-card reveal reveal-delay-1" data-modal="feat2">
+        <div class="feature-icon">🔔</div>
+        <h3>Уведомления</h3>
+        <p>Умные напоминания о дедлайнах: за сутки, за час и за 15 минут до срока сдачи.</p>
+        <button class="feature-more" onclick="openModal('feat2')">Подробнее →</button>
+      </div>
+      <div class="feature-card reveal reveal-delay-2" data-modal="feat3">
+        <div class="feature-icon">📊</div>
+        <h3>Прогресс и аналитика</h3>
+        <p>Визуальные графики выполнения задач, статистика продуктивности по дням и неделям.</p>
+        <button class="feature-more" onclick="openModal('feat3')">Подробнее →</button>
+      </div>
+      <div class="feature-card reveal reveal-delay-3" data-modal="feat4">
+        <div class="feature-icon">👥</div>
+        <h3>Совместная работа</h3>
+        <p>Общие проекты с однокурсниками, назначение задач и комментарии внутри команды.</p>
+        <button class="feature-more" onclick="openModal('feat4')">Подробнее →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BENEFITS -->
+<section id="benefits">
+  <div class="container">
+    <h2 class="section-title reveal">Почему выбирают StudyBuddy</h2>
+    <p class="section-subtitle reveal">Проверено тысячами студентов по всей стране</p>
+    <div class="benefits-grid">
+      <div class="benefit-card reveal">
+        <div class="benefit-emoji">⏰</div>
+        <h3>Экономия времени</h3>
+        <p>В среднем студенты экономят 2 часа в неделю на планировании и поиске нужных задач</p>
+      </div>
+      <div class="benefit-card reveal reveal-delay-1">
+        <div class="benefit-emoji">✨</div>
+        <h3>Простота</h3>
+        <p>Интуитивный интерфейс — начать работу можно за 3 минуты без обучения</p>
+      </div>
+      <div class="benefit-card reveal reveal-delay-2">
+        <div class="benefit-emoji">🚀</div>
+        <h3>Повышение мотивации</h3>
+        <p>Геймификация: очки, стрики и достижения за выполненные задачи</p>
+      </div>
+      <div class="benefit-card reveal reveal-delay-3">
+        <div class="benefit-emoji">🎯</div>
+        <h3>Контроль прогресса</h3>
+        <p>Наглядные дашборды показывают, где вы находитесь и что осталось сделать</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section id="reviews">
+  <div class="container">
+    <h2 class="section-title reveal">Отзывы студентов</h2>
+    <p class="section-subtitle reveal">Более 50 000 студентов уже используют StudyBuddy каждый день</p>
+    <div class="reviews-grid">
+      <article class="review-card reveal">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">«StudyBuddy полностью изменил мой подход к учёбе. Раньше я постоянно забывала о дедлайнах, а теперь всё под контролем. Особенно нравятся напоминания — они приходят именно тогда, когда нужно.»</p>
+        <div class="review-author">
+          <div class="review-avatar" style="background: linear-gradient(135deg, #FF6B6B, #FFB5B5)">А</div>
+          <div>
+            <div class="review-name">Алина Соколова</div>
+            <div class="review-role">Студентка 3 курса, МГУ</div>
+          </div>
+        </div>
+      </article>
+      <article class="review-card reveal reveal-delay-1">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">«Лучшее приложение для студентов из всех, что я пробовал. Удобный интерфейс, быстрый старт, ничего лишнего. Функция совместных проектов помогла нашей группе сдать диплом без нервов.»</p>
+        <div class="review-author">
+          <div class="review-avatar" style="background: linear-gradient(135deg, #4F6FD4, #7B96F0)">М</div>
+          <div>
+            <div class="review-name">Михаил Петров</div>
+            <div class="review-role">Магистрант, МГТУ</div>
+          </div>
+        </div>
+      </article>
+      <article class="review-card reveal reveal-delay-2">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">«Аналитика продуктивности — это что-то с чем-то! Я увидела, что трачу слишком много времени на соцсети перед экзаменами, и смогла это исправить. Сессия прошла на отлично!»</p>
+        <div class="review-author">
+          <div class="review-avatar" style="background: linear-gradient(135deg, #10B981, #6EE7B7)">К</div>
+          <div>
+            <div class="review-name">Карина Мажитова</div>
+            <div class="review-role">Аспирантка, СПбГУ</div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- REGISTER -->
+<section id="register">
+  <div class="container">
+    <h2 class="section-title reveal">Начни планировать сегодня</h2>
+    <p class="section-subtitle reveal" style="color:rgba(255,255,255,0.8)">Зарегистрируйся и получи доступ к премиум-функциям на 30 дней бесплатно</p>
+    <form class="reg-form reveal" id="regForm" novalidate>
+      <div class="form-group">
+        <label for="reg-name">Имя</label>
+        <input type="text" id="reg-name" name="name" placeholder="Введите ваше имя" autocomplete="given-name">
+        <span class="form-error" id="nameError" aria-live="polite"></span>
+      </div>
+      <div class="form-group">
+        <label for="reg-email">Email</label>
+        <input type="email" id="reg-email" name="email" placeholder="example@mail.ru" autocomplete="email">
+        <span class="form-error" id="emailError" aria-live="polite"></span>
+      </div>
+      <button type="submit" class="form-submit">Получить доступ →</button>
+      <p style="text-align:center; font-size:0.82rem; color:rgba(255,255,255,0.6); margin-top:8px">Нажимая кнопку, вы соглашаетесь с политикой конфиденциальности</p>
+    </form>
+    <div class="form-success reveal" id="formSuccess">
+      <div class="success-icon">🎉</div>
+      <div class="success-title">Добро пожаловать в StudyBuddy!</div>
+      <p style="color:rgba(255,255,255,0.85)">Ссылка для доступа отправлена на ваш email. Проверьте папку входящих.</p>
+    </div>
+  </div>
+</section>
+
+<!-- DOWNLOAD -->
+<section id="download">
+  <div class="container">
+    <div class="download-inner reveal">
+      <h2>Скачай приложение и начни планировать</h2>
+      <p>Доступно бесплатно для iOS и Android. Синхронизация между всеми устройствами.</p>
+      <div class="download-btns">
+        <a href="#" class="store-btn" aria-label="Скачать в App Store">
+          <span class="store-icon">🍎</span>
+          <div class="store-text">
+            <span class="store-label">Скачать в</span>
+            <span class="store-name">App Store</span>
+          </div>
+        </a>
+        <a href="#" class="store-btn" aria-label="Скачать в Google Play">
+          <span class="store-icon">▶</span>
+          <div class="store-text">
+            <span class="store-label">Получить в</span>
+            <span class="store-name">Google Play</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="#" class="logo">
+          <div class="logo-icon">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><rect x="2" y="3" width="12" height="16" rx="2" fill="white" fill-opacity="0.9"/><path d="M14 6l4 0M14 9l4 0M14 12l2 0" stroke="white" stroke-width="1.5" stroke-linecap="round"/><circle cx="16" cy="16" r="4" fill="#FF6B6B"/><path d="M14.5 16l1 1 2-2" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          StudyBuddy
+        </a>
+        <p>Приложение для студентов, которые хотят учиться эффективно и без стресса.</p>
+        <div class="social-links">
+          <a href="#" class="social-link" aria-label="ВКонтакте">VK</a>
+          <a href="#" class="social-link" aria-label="Telegram">TG</a>
+          <a href="#" class="social-link" aria-label="Instagram">IG</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Приложение</h4>
+        <a href="#features">Функции</a>
+        <a href="#benefits">Преимущества</a>
+        <a href="#reviews">Отзывы</a>
+        <a href="#download">Скачать</a>
+      </div>
+      <div class="footer-col">
+        <h4>Контакты</h4>
+        <a href="mailto:hello@studybuddy.app">hello@studybuddy.app</a>
+        <a href="#">Поддержка</a>
+        <a href="#">FAQ</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 StudyBuddy. Все права защищены.</span>
+      <div style="display:flex;gap:20px">
+        <a href="#">Политика конфиденциальности</a>
+        <a href="#">Пользовательское соглашение</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <button class="modal-close" id="modalClose" aria-label="Закрыть">✕</button>
+    <div class="modal-icon" id="modalIcon"></div>
+    <h3 id="modalTitle"></h3>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<!-- BACK TO TOP -->
+<button class="back-top" id="backTop" aria-label="Наверх">↑</button>
+
+<script>
+  // ===== DATA =====
+  const modals = {
+    feat1: {
+      icon: '📋',
+      title: 'Планирование задач по приоритету',
+      content: `
+        <p>StudyBuddy позволяет создавать задачи с тремя уровнями приоритета: 🔴 высокий, 🟡 средний, 🟢 низкий. Приложение автоматически сортирует список, помещая срочные дела наверх.</p>
+        <p>Доступные возможности:</p>
+        <ul>
+          <li>Разбивка задачи на подзадачи с чекбоксами</li>
+          <li>Привязка задачи к предмету или проекту</li>
+          <li>Установка даты и времени дедлайна</li>
+          <li>Добавление описания, файлов и ссылок</li>
+          <li>Повторяющиеся задачи (еженедельно, ежемесячно)</li>
+        </ul>
+      `
+    },
+    feat2: {
+      icon: '🔔',
+      title: 'Умные уведомления и напоминания',
+      content: `
+        <p>Не пропустите ни одного дедлайна благодаря гибкой системе напоминаний.</p>
+        <ul>
+          <li>Напоминание за 24 часа до срока</li>
+          <li>Напоминание за 1 час до дедлайна</li>
+          <li>Финальное напоминание за 15 минут</li>
+          <li>Ежеутреннее резюме задач на день</li>
+          <li>Push-уведомления на iOS и Android</li>
+          <li>Настройка тихих часов (например, с 23:00 до 8:00)</li>
+        </ul>
+        <p>Уведомления умные: если задача выполнена заранее, лишние напоминания отменяются автоматически.</p>
+      `
+    },
+    feat3: {
+      icon: '📊',
+      title: 'Визуализация прогресса и аналитика',
+      content: `
+        <p>Наглядные дашборды помогают понять, насколько эффективно вы работаете.</p>
+        <ul>
+          <li>Круговая диаграмма выполнения задач за день</li>
+          <li>График продуктивности по неделям</li>
+          <li>Стрик (серия дней подряд без пропусков)</li>
+          <li>Статистика по предметам: где тратите больше времени</li>
+          <li>Экспорт отчёта в PDF для самоанализа</li>
+        </ul>
+      `
+    },
+    feat4: {
+      icon: '👥',
+      title: 'Совместная работа с командой',
+      content: `
+        <p>Идеально для групповых проектов и студенческих команд.</p>
+        <ul>
+          <li>Создание общего проекта с приглашением участников</li>
+          <li>Назначение задач конкретным участникам</li>
+          <li>Комментарии и обсуждения внутри задачи</li>
+          <li>Общий дашборд прогресса команды</li>
+          <li>Уведомления об изменениях от участников</li>
+        </ul>
+        <p>Функция доступна в бесплатном плане (до 3 участников) и в Pro-версии (без ограничений).</p>
+      `
+    }
+  };
+
+  // ===== BURGER MENU =====
+  const burger = document.getElementById('burgerBtn');
+  const mobileNav = document.getElementById('mobileNav');
+  const navOverlay = document.getElementById('navOverlay');
+
+  function openMenu() {
+    burger.classList.add('active');
+    mobileNav.classList.add('open');
+    navOverlay.classList.add('show');
+    burger.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeMenu() {
+    burger.classList.remove('active');
+    mobileNav.classList.remove('open');
+    navOverlay.classList.remove('show');
+    burger.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+  burger.addEventListener('click', () => burger.classList.contains('active') ? closeMenu() : openMenu());
+  navOverlay.addEventListener('click', closeMenu);
+  document.querySelectorAll('.mobile-nav-link, .mobile-nav .btn').forEach(link => link.addEventListener('click', closeMenu));
+
+  // ===== SMOOTH SCROLL =====
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', e => {
+      const target = document.querySelector(link.getAttribute('href'));
+      if (!target) return;
+      e.preventDefault();
+      const offset = target.offsetTop - 70;
+      window.scrollTo({ top: offset, behavior: 'smooth' });
+    });
+  });
+
+  // ===== HEADER ON SCROLL =====
+  const header = document.getElementById('mainHeader');
+  const backTop = document.getElementById('backTop');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 60) {
+      header.classList.add('scrolled');
+      backTop.classList.add('show');
+    } else {
+      header.classList.remove('scrolled');
+      backTop.classList.remove('show');
+    }
+  }, { passive: true });
+  backTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  // ===== INTERSECTION OBSERVER (reveal) =====
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // ===== MODAL =====
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modalClose = document.getElementById('modalClose');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalContent = document.getElementById('modalContent');
+  const modalIcon = document.getElementById('modalIcon');
+
+  function openModal(key) {
+    const data = modals[key];
+    if (!data) return;
+    modalIcon.textContent = data.icon;
+    modalTitle.textContent = data.title;
+    modalContent.innerHTML = data.content;
+    modalOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    modalClose.focus();
+  }
+  function closeModal() {
+    modalOverlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  modalClose.addEventListener('click', closeModal);
+  modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && modalOverlay.classList.contains('active')) closeModal(); });
+
+  // ===== FORM VALIDATION =====
+  const regForm = document.getElementById('regForm');
+  const nameInput = document.getElementById('reg-name');
+  const emailInput = document.getElementById('reg-email');
+  const nameError = document.getElementById('nameError');
+  const emailError = document.getElementById('emailError');
+  const formSuccess = document.getElementById('formSuccess');
+
+  function validateName(val) {
+    if (!val.trim()) return 'Пожалуйста, введите ваше имя';
+    if (val.trim().length < 2) return 'Имя должно содержать минимум 2 символа';
+    return '';
+  }
+  function validateEmail(val) {
+    if (!val.trim()) return 'Пожалуйста, введите email';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) return 'Введите корректный email адрес';
+    return '';
+  }
+  function setError(input, errorEl, msg) {
+    errorEl.textContent = msg;
+    input.classList.toggle('error', !!msg);
+  }
+
+  nameInput.addEventListener('input', () => setError(nameInput, nameError, validateName(nameInput.value)));
+  emailInput.addEventListener('input', () => setError(emailInput, emailError, validateEmail(emailInput.value)));
+
+  regForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const ne = validateName(nameInput.value);
+    const ee = validateEmail(emailInput.value);
+    setError(nameInput, nameError, ne);
+    setError(emailInput, emailError, ee);
+    if (ne || ee) return;
+    // Success
+    regForm.classList.add('hidden');
+    formSuccess.classList.add('show');
+    formSuccess.classList.add('visible');
+  });
+</script>
+</body>
+</html>
